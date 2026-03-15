@@ -1,0 +1,33 @@
+========================================
+  PASOS EN RENDER (solo 6 clics)
+========================================
+
+La ventana del navegador ya esta abierta en Render.
+Sigue SOLO estos pasos:
+
+1. Clic en "New +" (arriba) y elige "Web Service".
+
+2. En "Connect a repository", selecciona:
+   power-plant-reports
+   (si no sale, conecta GitHub antes con "Configure account").
+
+3. Clic en "Connect" junto a ese repo.
+
+4. En la pantalla de configuracion:
+   - Build Command:  npm install
+   - Start Command:  npm start
+   (el resto dejalo como esta)
+
+5. Clic en "Create Web Service" (abajo, azul).
+
+6. Espera 3-5 minutos. Cuando termine veras:
+   "Your service is live at https://power-plant-reports-xxx.onrender.com"
+   Esa es la URL de tu app. Abrela o compartela.
+
+========================================
+SI YA CREASTE EL SERVICIO ANTES:
+  El script acaba de subir el codigo nuevo (fix).
+  Render redeploya solo. Entra a dashboard.render.com
+  -> power-plant-reports -> espera "Live" y abre la URL.
+  O abre directo: https://power-plant-reports.onrender.com
+========================================
