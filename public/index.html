@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0a1628" />
+  <title>Malfunction Reports - Power Plant</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>Field Reports</h1>
+      <p class="subtitle">Power Plant · GE Vernova</p>
+      <nav class="tabs">
+        <button type="button" class="tab active" data-tab="form">New report</button>
+        <button type="button" class="tab" data-tab="sent">Sent</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section id="panel-form" class="panel active">
+        <form id="report-form" class="form">
+          <div class="field">
+            <label for="kks">KKS</label>
+            <div class="field-row">
+              <input type="text" id="kks" name="kks" placeholder="e.g. 10ABC001" />
+              <div class="field-actions">
+                <button type="button" class="btn-icon" data-copy="kks" title="Copy">📋</button>
+                <button type="button" class="btn-icon" data-paste="kks" title="Paste">📥</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="location">Location</label>
+            <div class="field-row">
+              <input type="text" id="location" name="location" placeholder="Location in plant" />
+              <div class="field-actions">
+                <button type="button" class="btn-icon" data-copy="location" title="Copy">📋</button>
+                <button type="button" class="btn-icon" data-paste="location" title="Paste">📥</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="description">Description</label>
+            <div class="field-row">
+              <textarea id="description" name="description" rows="4" placeholder="Describe the malfunction..."></textarea>
+              <div class="field-actions">
+                <button type="button" class="btn-icon" data-copy="description" title="Copy">📋</button>
+                <button type="button" class="btn-icon" data-paste="description" title="Paste">📥</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="copy-block">
+            <button type="button" id="copy-all" class="btn btn-copy" title="Copy all fields to clipboard">
+              <span class="copy-icon">📋</span> Copy all
+            </button>
+            <span id="copy-feedback" class="copy-feedback"></span>
+          </div>
+
+          <div class="field">
+            <label>Attachments (photo, video, document)</label>
+            <div class="attach-actions">
+              <button type="button" id="btn-camera-photo" class="btn btn-camera">📷 Take photo</button>
+              <button type="button" id="btn-camera-video" class="btn btn-camera">🎥 Record video</button>
+              <input type="file" id="camera-photo" accept="image/*" capture="environment" class="hidden-input" />
+              <input type="file" id="camera-video" accept="video/*" capture="environment" class="hidden-input" />
+            </div>
+            <input type="file" id="attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+            <div id="file-list" class="file-list"></div>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="field">
+            <label>Send report to (email)</label>
+            <div class="recipients-list" id="recipients-list"></div>
+            <div class="field custom-recipient">
+              <input type="email" id="custom-recipient" placeholder="Or enter email if not in list" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Save report</button>
+            <button type="button" id="open-email" class="btn btn-email">Open email with report</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="panel-sent" class="panel">
+        <div class="sent-toolbar">
+          <button type="button" id="back-to-form" class="btn btn-secondary">← New report</button>
+        </div>
+        <ul id="sent-list" class="sent-list"></ul>
+        <p id="sent-empty" class="empty-msg">No reports saved.</p>
+      </section>
+
+      <section id="panel-detail" class="panel">
+        <div class="detail-toolbar">
+          <button type="button" id="back-to-sent" class="btn btn-secondary">← Back</button>
+          <button type="button" id="copy-detail" class="btn btn-copy">📋 Copy all</button>
+          <span id="copy-detail-feedback" class="copy-feedback"></span>
+        </div>
+        <div id="detail-content" class="detail-content"></div>
+        <div class="detail-complement">
+          <h3>Add or edit information (PC)</h3>
+          <div class="field">
+            <label for="detail-desc">Description</label>
+            <div class="field-row">
+              <textarea id="detail-desc" rows="3" placeholder="Add or update description..."></textarea>
+              <div class="field-actions">
+                <button type="button" class="btn-icon" data-copy="detail-desc" title="Copy">📋</button>
+                <button type="button" class="btn-icon" data-paste="detail-desc" title="Paste">📥</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Upload more attachments</label>
+            <input type="file" id="detail-attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+          </div>
+          <button type="button" id="save-detail" class="btn btn-primary">Save changes</button>
+        </div>
+        <div class="detail-actions">
+          <button type="button" id="open-email-detail" class="btn btn-email">Open email with report</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# Render.com - deploy config (auto-detected when you connect the repo)
+services:
+  - type: web
+    name: power-plant-reports
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start

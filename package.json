@@ -1,0 +1,19 @@
+{
+  "name": "power-plant-malfunction-reports",
+  "version": "1.0.0",
+  "description": "Power plant malfunction reports - GE Vernova",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.0"
+  }
+}
