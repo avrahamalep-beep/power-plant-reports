@@ -1,7 +1,12 @@
-# Render.com - deploy config (auto-detected when you connect the repo)
+# Render Blueprint — si el deploy falla, renombra este archivo a render.yaml.off
+# y configura Build/Start solo en el panel de Render.
 services:
   - type: web
     name: power-plant-reports
     runtime: node
+    plan: free
+    region: oregon
+    branch: main
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
