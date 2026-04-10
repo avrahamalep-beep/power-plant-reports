@@ -68,6 +68,34 @@ function showCopyFeedback(el, msg = 'Copied') {
   setTimeout(() => { el.style.visibility = 'hidden'; }, 2000);
 }
 
+let toastTimer;
+function showToast(msg) {
+  const el = $('#toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('visible'), 3500);
+}
+
+async function deleteReport(id) {
+  try {
+    const r = await fetch(API + '/api/reports/' + id, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    showToast('Report deleted.');
+    if (currentReportId === id) {
+      currentReportId = null;
+      window._detailReport = null;
+      showPanel(panelSent);
+      $$('.tab').forEach(t => t.classList.remove('active'));
+      $('.tab[data-tab="sent"]').classList.add('active');
+    }
+    loadSentReports();
+  } catch (err) {
+    alert('Could not delete report.');
+  }
+}
+
 function addToPendingFiles(fileListLike) {
   if (!fileListLike || !fileListLike.length) return;
   pendingFiles = pendingFiles.concat(Array.from(fileListLike));
@@ -237,11 +265,37 @@ form.addEventListener('submit', async (e) => {
     $$('input[name="recipient"]').forEach(c => { c.checked = false; });
     $$('.recipient-chip').forEach(ch => ch.classList.remove('selected'));
 
+    showToast('Report saved.');
     showPanel(panelSent);
     document.querySelector('.tab[data-tab="sent"]').click();
     loadSentReports();
   } catch (err) {
     alert('Failed to save report. Make sure the server is running.');
+  }
+});
+
+sentList.addEventListener('click', (e) => {
+  const delBtn = e.target.closest('.btn-sent-delete');
+  if (delBtn) {
+    e.preventDefault();
+    const id = delBtn.getAttribute('data-id');
+    if (id && confirm('Delete this report? This cannot be undone.')) deleteReport(id);
+    return;
+  }
+  const main = e.target.closest('.sent-item-main');
+  if (main) {
+    const li = main.closest('li[data-id]');
+    if (li) openReportDetail(li.dataset.id);
+  }
+});
+
+sentList.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const main = e.target.closest('.sent-item-main');
+  if (main) {
+    e.preventDefault();
+    const li = main.closest('li[data-id]');
+    if (li) openReportDetail(li.dataset.id);
   }
 });
 
@@ -266,14 +320,14 @@ function loadSentReports() {
         const attCount = (r.attachments && r.attachments.length) || 0;
         return `
           <li data-id="${r.id}">
-            <div class="report-kks">${r.kks || '(no KKS)'}</div>
-            <div class="report-meta">${r.location || '-'} · ${date}${attCount ? ' · ' + attCount + ' attachment(s)' : ''}</div>
+            <div class="sent-item-main" role="button" tabindex="0">
+              <div class="report-kks">${r.kks || '(no KKS)'}</div>
+              <div class="report-meta">${r.location || '-'} · ${date}${attCount ? ' · ' + attCount + ' attachment(s)' : ''}</div>
+            </div>
+            <button type="button" class="btn-sent-delete" data-id="${r.id}" aria-label="Delete report">Delete</button>
           </li>
         `;
       }).join('');
-      sentList.querySelectorAll('li').forEach(li => {
-        li.addEventListener('click', () => openReportDetail(li.dataset.id));
-      });
     })
     .catch(() => {
       sentEmpty.style.display = 'block';
@@ -357,6 +411,13 @@ $('#open-email-detail').addEventListener('click', () => {
   const r = window._detailReport;
   if (!r) return;
   openMailto(r);
+});
+
+$('#delete-detail').addEventListener('click', () => {
+  const id = currentReportId;
+  if (!id) return;
+  if (!confirm('Delete this report permanently? Attachments will be removed too.')) return;
+  deleteReport(id);
 });
 
 $('#save-detail').addEventListener('click', async () => {

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div class="app">
     <header class="header">
       <h1>Field Reports</h1>
@@ -100,6 +101,7 @@
         <div class="detail-toolbar">
           <button type="button" id="back-to-sent" class="btn btn-secondary">← Back</button>
           <button type="button" id="copy-detail" class="btn btn-copy">📋 Copy all</button>
+          <button type="button" id="delete-detail" class="btn btn-delete">Delete report</button>
           <span id="copy-detail-feedback" class="copy-feedback"></span>
         </div>
         <div id="detail-content" class="detail-content"></div>

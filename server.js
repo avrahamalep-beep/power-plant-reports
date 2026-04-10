@@ -153,6 +153,23 @@ app.patch('/api/reports/:id', (req, res) => {
   res.json(r);
 });
 
+app.delete('/api/reports/:id', (req, res) => {
+  const reports = readReports();
+  const idx = reports.findIndex(x => x.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Report not found' });
+  reports.splice(idx, 1);
+  writeReports(reports);
+  const reportDir = path.join(UPLOADS_DIR, req.params.id);
+  if (fs.existsSync(reportDir)) {
+    try {
+      fs.rmSync(reportDir, { recursive: true, force: true });
+    } catch (e) {
+      console.error('Could not remove upload folder:', e);
+    }
+  }
+  res.status(204).send();
+});
+
 // Subir archivos a un reporte existente
 app.post('/api/reports/:id/upload', upload.array('files', 20), (req, res) => {
   const reports = readReports();
