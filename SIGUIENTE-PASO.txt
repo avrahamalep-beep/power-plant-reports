@@ -1,5 +1,15 @@
 ========================================
-  QUE HACE EL SIGUIENTE PASO AUTOMATICO
+  UN SOLO ARCHIVO (recomendado)
+========================================
+
+Doble clic en:  HAZLO-AUTOMATICO.bat
+
+  - Sube cambios a GitHub (commit si hace falta + push)
+  - Abre Render y la URL de la app
+  No necesitas escribir "cd" ni rutas.
+
+========================================
+  SIGUIENTE-PASO-AUTOMATICO.bat (alternativa)
 ========================================
 
 Doble clic en:  SIGUIENTE-PASO-AUTOMATICO.bat
