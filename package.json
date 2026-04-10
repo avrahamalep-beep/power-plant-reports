@@ -4,11 +4,12 @@
   "description": "Power plant malfunction reports - GE Vernova",
   "main": "server.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "build": "node -e \"process.exit(0)\""
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -21,7 +21,13 @@ Si creaste el Web Service **sin** Blueprint:
 | **Build Command** | `npm install` |
 | **Start Command** | `npm start` |
 
-**Environment** → añade si hace falta: `NODE_VERSION` = `20`
+**Environment** → añade **obligatorio** si el build falla con `lockfileVersion: 3`:
+
+| Variable | Valor |
+|----------|--------|
+| `NODE_VERSION` | `20.18.1` |
+
+Sin Node 20+, `npm install` puede fallar (exit 1) con el `package-lock.json` actual.
 
 ---
 

@@ -7,6 +7,10 @@ services:
     plan: free
     region: oregon
     branch: main
-    buildCommand: npm install
+    # Node 20 + npm moderno: evita fallo con package-lock.json v3
+    buildCommand: npm install --no-audit --no-fund
     startCommand: npm start
     healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.1"
