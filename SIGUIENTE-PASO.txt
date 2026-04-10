@@ -1,0 +1,23 @@
+========================================
+  QUE HACE EL SIGUIENTE PASO AUTOMATICO
+========================================
+
+Doble clic en:  SIGUIENTE-PASO-AUTOMATICO.bat
+
+1) Sube cambios a GitHub (si hay archivos nuevos o modificados)
+2) Abre el panel de Render (ves si el deploy esta en verde)
+3) Abre la app: https://power-plant-reports.onrender.com
+
+Render redeploya SOLO cuando hay push a main (Auto-Deploy).
+
+Si no tocaste codigo, el push dira "Everything up-to-date" y esta bien:
+Render no redeploya, pero puedes ver el estado en el panel.
+
+========================================
+  ORDEN HABITUAL
+========================================
+
+1. ABRIR-APP-ONLINE.bat     (primera vez: GitHub + instrucciones Render)
+2. SIGUIENTE-PASO-AUTOMATICO.bat   (cada vez que quieras subir y ver la app)
+
+========================================
