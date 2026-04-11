@@ -2,9 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a1628" />
+  <meta name="description" content="Power plant field malfunction reports — GE Vernova. Save history, attachments, and open email." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Field Reports" />
   <title>Malfunction Reports - Power Plant</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -15,7 +23,7 @@
       <p class="subtitle">Power Plant · GE Vernova</p>
       <nav class="tabs">
         <button type="button" class="tab active" data-tab="form">New report</button>
-        <button type="button" class="tab" data-tab="sent">Saved reports</button>
+        <button type="button" class="tab" data-tab="saved">Reports saved</button>
       </nav>
     </header>
 
@@ -60,6 +68,30 @@
             <span id="copy-feedback" class="copy-feedback"></span>
           </div>
 
+          <div class="recipients-panel">
+            <div class="recipients-panel-head">
+              <h3 class="recipients-title">Email recipients</h3>
+              <p class="recipients-lead">Choose GE Vernova contacts for this report. Use <strong>Select all</strong> or pick individually.</p>
+            </div>
+            <div class="recipients-toolbar">
+              <input type="search" id="recipient-filter" class="recipient-filter" placeholder="Search by name or email…" autocomplete="off" enterkeyhint="search" aria-label="Filter recipients" />
+              <div class="recipients-bulk">
+                <button type="button" id="recipients-select-all" class="btn btn-sm btn-secondary">Select all</button>
+                <button type="button" id="recipients-clear" class="btn btn-sm btn-secondary">Clear</button>
+              </div>
+            </div>
+            <p id="recipient-count" class="recipient-count" aria-live="polite"></p>
+            <div class="recipients-scroll">
+              <div class="recipients-list" id="recipients-list"></div>
+            </div>
+            <div class="field custom-recipient-field">
+              <label for="custom-recipient">Additional email <span class="label-optional">(optional)</span></label>
+              <input type="email" id="custom-recipient" name="custom-recipient" placeholder="name@company.com" autocomplete="email" />
+            </div>
+          </div>
+
+          <hr class="divider" />
+
           <div class="field">
             <label>Attachments (photo, video, document)</label>
             <div class="attach-actions">
@@ -72,16 +104,6 @@
             <div id="file-list" class="file-list"></div>
           </div>
 
-          <hr class="divider" />
-
-          <div class="field">
-            <label>Send report to (email)</label>
-            <div class="recipients-list" id="recipients-list"></div>
-            <div class="field custom-recipient">
-              <input type="email" id="custom-recipient" placeholder="Or enter email if not in list" />
-            </div>
-          </div>
-
           <div class="actions">
             <button type="submit" class="btn btn-primary">Save report</button>
             <button type="button" id="open-email" class="btn btn-email">Open email with report</button>
@@ -89,21 +111,23 @@
         </form>
       </section>
 
-      <section id="panel-sent" class="panel">
-        <div class="sent-toolbar">
+      <section id="panel-saved" class="panel">
+        <h2 class="panel-title">Report history</h2>
+        <p class="panel-hint">Search by KKS or description text. Reports are stored on the server and do not disappear when you configure a database (see README).</p>
+        <div class="saved-toolbar">
           <button type="button" id="back-to-form" class="btn btn-secondary">← New report</button>
-          <label class="sent-search-wrap">
-            <span class="visually-hidden">Search saved reports</span>
-            <input type="search" id="sent-search" class="sent-search" placeholder="Search KKS, location, description…" autocomplete="off" />
+          <label class="saved-search-wrap">
+            <span class="visually-hidden">Search reports (KKS or description)</span>
+            <input type="search" id="saved-search" class="saved-search" placeholder="Search by KKS or description…" autocomplete="off" />
           </label>
         </div>
-        <ul id="sent-list" class="sent-list"></ul>
-        <p id="sent-empty" class="empty-msg">No reports saved.</p>
+        <ul id="saved-list" class="saved-list"></ul>
+        <p id="saved-empty" class="empty-msg">No reports in history yet.</p>
       </section>
 
       <section id="panel-detail" class="panel">
         <div class="detail-toolbar">
-          <button type="button" id="back-to-sent" class="btn btn-secondary">← Back</button>
+          <button type="button" id="back-to-saved" class="btn btn-secondary">← Reports saved</button>
           <button type="button" id="copy-detail" class="btn btn-copy">📋 Copy all</button>
           <button type="button" id="delete-detail" class="btn btn-delete">Delete report</button>
           <span id="copy-detail-feedback" class="copy-feedback"></span>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Field Reports">
+  <rect width="512" height="512" rx="112" fill="#0a1628"/>
+  <rect x="48" y="48" width="416" height="416" rx="80" fill="none" stroke="#00a3e0" stroke-width="8" opacity="0.35"/>
+  <path fill="#00a3e0" d="M176 352V160h72c48 0 72 24 72 64 0 36-20 58-56 62l64 66h-52l-56-60h-40v60H176zm40-100h28c22 0 34-10 34-28s-12-30-36-30h-26v58z"/>
+</svg>

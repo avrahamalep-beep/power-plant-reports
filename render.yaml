@@ -11,6 +11,7 @@ services:
     buildCommand: npm install --no-audit --no-fund
     startCommand: npm start
     healthCheckPath: /health
+    # In the Render dashboard, add DATABASE_URL (Neon/Postgres) so report history survives deploys.
     envVars:
       - key: NODE_VERSION
         value: "20.18.1"

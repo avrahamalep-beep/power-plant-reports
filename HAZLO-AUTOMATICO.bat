@@ -9,21 +9,25 @@ echo  ========================================
 echo    HAZLO AUTOMATICO
 echo  ========================================
 echo    Carpeta: %CD%
+echo    Un clic: commit + push + abrir Render y la app
 echo  ========================================
 echo.
+
+echo [0/4] Rama main...
+git branch -M main 2>nul
 
 echo [1/4] Git: guardando cambios...
 git add -A
 git diff --staged --quiet
 if errorlevel 1 (
-  git commit -m "chore: auto %date% %time%"
+  git commit -m "chore: auto deploy %date% %time%"
   echo       Commit creado.
 ) else (
   echo       Nada nuevo que commitear.
 )
 
 echo.
-echo [2/4] Git: subiendo a GitHub...
+echo [2/4] Git: subiendo a GitHub ^(Render despliega solo si esta enlazado^)...
 git push origin main
 if errorlevel 1 (
   color 0C
