@@ -2,7 +2,6 @@ const API = '';
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => el.querySelectorAll(s);
 
-let recipients = [];
 let pendingFiles = [];
 let currentReportId = null;
 
@@ -22,28 +21,14 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
-function updateRecipientSelectionUI() {
-  const list = $('#recipients-list');
-  if (!list) return;
-  list.querySelectorAll('.recipient-chip').forEach(chip => {
-    const cb = chip.querySelector('input[type="checkbox"]');
-    if (cb) chip.classList.toggle('selected', cb.checked);
-  });
-  const countEl = $('#recipient-count');
-  const total = $$('input[name="recipient"]').length;
-  const n = $$('input[name="recipient"]:checked').length;
-  if (countEl) {
-    countEl.textContent = total
-      ? (n === total ? `All ${total} contacts selected` : `${n} of ${total} selected`)
-      : '';
-  }
-}
-
 function filterReportsByQuery(reports, q) {
   if (!q) return reports;
   return reports.filter(r => {
     const attNames = (r.attachments || []).map(a => a.name).join(' ');
-    const blob = [r.kks, r.location, r.description, attNames].join(' ').toLowerCase();
+    const blob = [r.kks, r.location, r.description, attNames, r.reporterName, r.reporterId]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
     return blob.includes(q);
   });
 }
@@ -60,11 +45,13 @@ function renderSavedList(reports, options = {}) {
   savedList.innerHTML = reports.map(r => {
     const date = new Date(r.createdAt).toLocaleString();
     const attCount = (r.attachments && r.attachments.length) || 0;
+    const by = (r.reporterName || '').trim();
+    const byPart = by ? ` · ${escapeHtml(by)}` : '';
     return `
           <li data-id="${r.id}">
             <div class="saved-item-main" role="button" tabindex="0">
               <div class="report-kks">${r.kks || '(no KKS)'}</div>
-              <div class="report-meta">${r.location || '-'} · ${date}${attCount ? ' · ' + attCount + ' attachment(s)' : ''}</div>
+              <div class="report-meta">${escapeHtml(r.location || '-')}${byPart} · ${date}${attCount ? ' · ' + attCount + ' attachment(s)' : ''}</div>
             </div>
             <button type="button" class="btn-saved-delete" data-id="${r.id}" aria-label="Delete report">Delete</button>
           </li>
@@ -86,6 +73,7 @@ function buildReportText(data) {
     '',
     'KKS: ' + (data.kks || '-'),
     'Location: ' + (data.location || '-'),
+    'Prepared by: ' + ((data.reporterName || '').trim() || '-'),
     '',
     'Description:',
     (data.description || '-'),
@@ -93,6 +81,46 @@ function buildReportText(data) {
     '---'
   ];
   return lines.join('\n');
+}
+
+function reporterLabelFromFormSelect() {
+  const sel = $('#reporter');
+  if (!sel || !sel.value) return '';
+  const opt = sel.options[sel.selectedIndex];
+  return opt ? opt.textContent.trim() : '';
+}
+
+function fillReporterFormOptions() {
+  const sel = $('#reporter');
+  if (!sel) return;
+  sel.innerHTML =
+    '<option value="" disabled selected>Select who prepared this report…</option>';
+  (window._reportersList || []).forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.id;
+    o.textContent = r.name;
+    sel.appendChild(o);
+  });
+}
+
+function fillDetailReporterSelect(selectedId, fallbackName) {
+  const sel = $('#detail-reporter');
+  if (!sel) return;
+  const list = window._reportersList || [];
+  sel.innerHTML = '<option value="">— Not recorded —</option>';
+  list.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.id;
+    o.textContent = r.name;
+    sel.appendChild(o);
+  });
+  if (selectedId && !list.some(r => r.id === selectedId)) {
+    const o = document.createElement('option');
+    o.value = selectedId;
+    o.textContent = (fallbackName && String(fallbackName).trim()) || selectedId;
+    sel.appendChild(o);
+  }
+  sel.value = selectedId || '';
 }
 
 function copyToClipboard(text) {
@@ -207,7 +235,8 @@ $('#copy-all').addEventListener('click', () => {
   const data = {
     kks: $('#kks').value.trim(),
     location: $('#location').value.trim(),
-    description: $('#description').value.trim()
+    description: $('#description').value.trim(),
+    reporterName: reporterLabelFromFormSelect()
   };
   const text = buildReportText(data);
   copyToClipboard(text).then(() => {
@@ -237,76 +266,114 @@ $('#camera-video').addEventListener('change', function() {
   this.value = '';
 });
 
-// Recipients
-fetch(API + '/api/recipients')
-  .then(r => r.json())
-  .then(data => {
-    recipients = data;
-    const list = $('#recipients-list');
-    list.innerHTML = recipients.map(rec => `
-      <label class="recipient-chip" data-email="${escapeHtml(rec.email)}">
-        <input type="checkbox" name="recipient" value="${escapeHtml(rec.email)}" />
-        <span>${escapeHtml(rec.name)}</span>
-      </label>
-    `).join('');
-    list.querySelectorAll('.recipient-chip').forEach(chip => {
-      chip.addEventListener('click', (e) => {
-        if (e.target.type !== 'checkbox') {
-          const cb = chip.querySelector('input');
-          cb.checked = !cb.checked;
-          chip.classList.toggle('selected', cb.checked);
-        } else {
-          chip.classList.toggle('selected', e.target.checked);
-        }
-        updateRecipientSelectionUI();
-      });
-    });
-    updateRecipientSelectionUI();
-    const rf = $('#recipient-filter');
-    if (rf && rf.dataset.bound !== '1') {
-      rf.dataset.bound = '1';
-      rf.addEventListener('input', () => {
-        const q = rf.value.trim().toLowerCase();
-        list.querySelectorAll('.recipient-chip').forEach((chip) => {
-          const hay = ((chip.dataset.email || '') + ' ' + chip.textContent).toLowerCase();
-          chip.style.display = !q || hay.includes(q) ? '' : 'none';
-        });
-      });
+window._mailConfigured = false;
+
+Promise.all([
+  fetch(API + '/api/reporters').then(r => r.json()),
+  fetch(API + '/api/mail/status')
+    .then(r => r.json())
+    .catch(() => ({ configured: false }))
+])
+  .then(([data, mailStatus]) => {
+    window._reportersList = Array.isArray(data) ? data : [];
+    window._mailConfigured = !!(mailStatus && mailStatus.configured);
+    fillReporterFormOptions();
+    if (panelDetail && panelDetail.classList.contains('active') && window._detailReport) {
+      const dr = window._detailReport;
+      fillDetailReporterSelect(dr.reporterId, dr.reporterName);
     }
   })
-  .catch(() => {});
+  .catch(() => {
+    window._reportersList = [];
+    window._mailConfigured = false;
+    const sel = $('#reporter');
+    if (sel) {
+      sel.innerHTML = '<option value="" disabled selected>Could not load author list</option>';
+    }
+  });
 
-const btnSelectAllRecipients = $('#recipients-select-all');
-const btnClearRecipients = $('#recipients-clear');
-if (btnSelectAllRecipients) {
-  btnSelectAllRecipients.addEventListener('click', () => {
-    $$('input[name="recipient"]').forEach(cb => { cb.checked = true; });
-    updateRecipientSelectionUI();
+function clearDetailEmailForm() {
+  const ex = $('#email-extra');
+  if (ex) ex.value = '';
+  $$('.email-recipient-cb').forEach(c => {
+    c.checked = false;
   });
 }
-if (btnClearRecipients) {
-  btnClearRecipients.addEventListener('click', () => {
-    $$('input[name="recipient"]').forEach(cb => { cb.checked = false; });
-    updateRecipientSelectionUI();
-  });
+
+function fillEmailRecipientListOnce() {
+  const wrap = $('#email-recipient-list');
+  if (!wrap) return Promise.resolve();
+  if (wrap.dataset.filled === '1') return Promise.resolve();
+  return fetch(API + '/api/recipients')
+    .then(r => r.json())
+    .then(list => {
+      wrap.dataset.filled = '1';
+      wrap.innerHTML = (Array.isArray(list) ? list : [])
+        .map(
+          rec => `
+      <label class="email-recipient-item">
+        <input type="checkbox" class="email-recipient-cb" value="${escapeHtml(rec.email)}" />
+        <span>${escapeHtml(rec.name)}</span>
+      </label>
+    `
+        )
+        .join('');
+    })
+    .catch(() => {
+      wrap.innerHTML =
+        '<p class="empty-msg">Could not load team list. You can still type addresses below.</p>';
+    });
 }
 
-function getSelectedEmails() {
-  const checked = $$('input[name="recipient"]:checked');
-  const emails = Array.from(checked).map(c => c.value);
-  const custom = $('#custom-recipient').value.trim();
-  if (custom) emails.push(custom);
-  return emails;
+function setupDetailEmailPanel() {
+  const sec = $('#email-send-section');
+  if (!sec) return;
+  const intro = $('#email-send-intro');
+  const form = $('#email-send-form');
+  sec.hidden = false;
+  if (window._mailConfigured) {
+    if (intro) {
+      intro.hidden = true;
+      intro.textContent = '';
+    }
+    if (form) form.hidden = false;
+    fillEmailRecipientListOnce().then(() => clearDetailEmailForm());
+  } else {
+    if (intro) {
+      intro.hidden = false;
+      intro.textContent =
+        'Server email is not configured. To send from here with attachments, set SMTP_HOST, SMTP_USER, and SMTP_PASS on the server (see .env.example). Existing saved reports are not modified.';
+    }
+    if (form) form.hidden = true;
+  }
+}
+
+function collectEmailRecipients() {
+  const out = [];
+  $$('.email-recipient-cb:checked').forEach(c => out.push(c.value));
+  const extra = ($('#email-extra') && $('#email-extra').value) || '';
+  extra.split(/[\s,;]+/).forEach(s => {
+    const t = s.trim();
+    if (t.includes('@')) out.push(t.toLowerCase());
+  });
+  return [...new Set(out.map(x => x.trim().toLowerCase()).filter(Boolean))];
 }
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
+  const repSel = $('#reporter');
+  if (!repSel || !repSel.value) {
+    alert('Choose who prepared this report from the list.');
+    repSel && repSel.focus();
+    return;
+  }
+  const repOpt = repSel.options[repSel.selectedIndex];
   const payload = {
     kks: $('#kks').value.trim(),
     location: $('#location').value.trim(),
     description: $('#description').value.trim(),
-    sentTo: getSelectedEmails(),
-    customRecipient: $('#custom-recipient').value.trim()
+    reporterId: repSel.value,
+    reporterName: repOpt ? repOpt.textContent.trim() : ''
   };
 
   try {
@@ -337,12 +404,7 @@ form.addEventListener('submit', async (e) => {
     $('#camera-photo').value = '';
     $('#camera-video').value = '';
     form.reset();
-    $$('input[name="recipient"]').forEach(c => { c.checked = false; });
-    $$('.recipient-chip').forEach(ch => {
-      ch.classList.remove('selected');
-      ch.style.display = '';
-    });
-    updateRecipientSelectionUI();
+    fillReporterFormOptions();
 
     showToast('Report saved.');
     showPanel(panelSaved);
@@ -410,9 +472,11 @@ function openReportDetail(id) {
     .then(report => {
       window._detailReport = report;
       renderDetailReport(report);
+      fillDetailReporterSelect(report.reporterId, report.reporterName);
       $('#detail-desc').value = report.description || '';
       $('#detail-attachments').value = '';
       showPanel(panelDetail);
+      setupDetailEmailPanel();
     })
     .catch(() => alert('Could not load report.'));
 }
@@ -448,6 +512,10 @@ function renderDetailReport(report) {
       <div class="value">${escapeHtml(report.location || '-')}</div>
     </div>
     <div class="detail-field">
+      <label>Prepared by</label>
+      <div class="value">${escapeHtml((report.reporterName || '').trim() || '—')}</div>
+    </div>
+    <div class="detail-field">
       <label>Description</label>
       <div class="value">${escapeHtml(report.description || '-')}</div>
     </div>
@@ -468,6 +536,8 @@ function renderDetailReport(report) {
 }
 
 $('#back-to-saved').addEventListener('click', () => {
+  const es = $('#email-send-section');
+  if (es) es.hidden = true;
   showPanel(panelSaved);
   loadSavedReports();
 });
@@ -496,6 +566,47 @@ $('#delete-detail').addEventListener('click', () => {
   deleteReport(id);
 });
 
+const btnSendEmail = $('#btn-send-email');
+if (btnSendEmail) {
+  btnSendEmail.addEventListener('click', async () => {
+    const id = currentReportId;
+    if (!id || !window._mailConfigured) return;
+    const to = collectEmailRecipients();
+    if (!to.length) {
+      alert('Select at least one team member or enter an additional email address.');
+      return;
+    }
+    btnSendEmail.disabled = true;
+    const fb = $('#email-send-feedback');
+    if (fb) {
+      fb.style.visibility = 'visible';
+      fb.textContent = 'Sending…';
+    }
+    try {
+      const r = await fetch(API + '/api/reports/' + id + '/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || r.statusText);
+      if (fb) {
+        fb.textContent =
+          'Sent to ' + to.length + ' address(es), ' + (j.attachmentCount || 0) + ' attachment(s).';
+      }
+      showToast('Email sent.');
+      setTimeout(() => {
+        if (fb) fb.style.visibility = 'hidden';
+      }, 5000);
+    } catch (e) {
+      alert(e.message || 'Send failed');
+      if (fb) fb.style.visibility = 'hidden';
+    } finally {
+      btnSendEmail.disabled = false;
+    }
+  });
+}
+
 $('#save-detail').addEventListener('click', async () => {
   const id = currentReportId;
   if (!id) return;
@@ -503,11 +614,24 @@ $('#save-detail').addEventListener('click', async () => {
   const extraFiles = Array.from($('#detail-attachments').files || []);
 
   try {
+    const dSel = $('#detail-reporter');
+    const rid = (dSel && dSel.value) || '';
+    let rname = '';
+    if (rid) {
+      const fromList = (window._reportersList || []).find(r => r.id === rid);
+      rname = fromList
+        ? fromList.name
+        : (dSel.options[dSel.selectedIndex] && dSel.options[dSel.selectedIndex].textContent.trim()) || '';
+    }
     if (description !== undefined) {
       await fetch(API + '/api/reports/' + id, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description })
+        body: JSON.stringify({
+          description,
+          reporterId: rid,
+          reporterName: rname
+        })
       });
     }
     if (extraFiles.length) {
@@ -519,6 +643,7 @@ $('#save-detail').addEventListener('click', async () => {
     const updated = await res.json();
     window._detailReport = updated;
     renderDetailReport(updated);
+    fillDetailReporterSelect(updated.reporterId, updated.reporterName);
     $('#detail-desc').value = updated.description || '';
     $('#detail-attachments').value = '';
     showCopyFeedback($('#copy-detail-feedback'), 'Saved');

@@ -84,6 +84,13 @@ El proyecto carga **`.env`** automáticamente (`dotenv`). La consola debe mostra
 
 ---
 
-## Atajo en Windows
+## 6. Correo con adjuntos desde la app (opcional)
 
-Doble clic en **`CONFIGURAR-NEON-RENDER.bat`**: abre Neon y Render en el navegador para que completes los pasos 1–3.
+En Render → **Environment** del mismo servicio web puedes añadir variables **SMTP** (ver `.env.example`: `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, etc.). No migra datos: solo habilita el botón **Send by email** en el detalle de un reporte guardado. Los reportes antiguos no se modifican.
+
+---
+
+## Atajos en Windows
+
+- **`HAZLO-AUTOMATICO.bat`**: `npm install`, crea `.env` desde `.env.example` si no existe (y abre el Bloc de notas), **commit + push** a `main`, y abre Render, Neon, la app online y esta guía.
+- **`CONFIGURAR-NEON-RENDER.bat`**: crea `.env` si falta, abre Neon, Render y esta guía (para pegar `DATABASE_URL` y opcionalmente SMTP en Render o en `.env` local).

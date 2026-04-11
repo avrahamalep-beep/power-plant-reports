@@ -28,7 +28,7 @@
       <div class="header-inner">
         <p class="product-line"><span class="product-badge">GE Vernova</span> · Power plant operations</p>
         <h1>Field malfunction reports</h1>
-        <p class="subtitle">Capture incidents, attachments, and distribution list in one workflow.</p>
+        <p class="subtitle">Capture incidents, attachments, and who prepared the report — then share via your own email or Teams.</p>
       </div>
       <nav class="tabs" aria-label="Main sections">
         <button type="button" class="tab active" data-tab="form">New report</button>
@@ -95,25 +95,14 @@
 
           <hr class="divider" />
 
-          <div class="recipients-panel">
-            <div class="recipients-panel-head">
-              <h3 class="recipients-title">Distribution list</h3>
-              <p class="recipients-lead">These contacts are <strong>saved with the report</strong> (for the record). Use <strong>Copy all</strong> or download attachments from the saved report to share by email or Teams.</p>
-            </div>
-            <div class="recipients-toolbar">
-              <input type="search" id="recipient-filter" class="recipient-filter" placeholder="Search by name or email…" autocomplete="off" enterkeyhint="search" aria-label="Filter recipients" />
-              <div class="recipients-bulk">
-                <button type="button" id="recipients-select-all" class="btn btn-sm btn-secondary">Select all</button>
-                <button type="button" id="recipients-clear" class="btn btn-sm btn-secondary">Clear</button>
-              </div>
-            </div>
-            <p id="recipient-count" class="recipient-count" aria-live="polite"></p>
-            <div class="recipients-scroll">
-              <div class="recipients-list" id="recipients-list"></div>
-            </div>
-            <div class="field custom-recipient-field">
-              <label for="custom-recipient">Additional email <span class="label-optional">(optional)</span></label>
-              <input type="email" id="custom-recipient" name="custom-recipient" placeholder="name@company.com" autocomplete="email" />
+          <div class="form-section">
+            <h2 class="section-heading">Prepared by</h2>
+            <p class="section-hint">Required. This name is stored with the report and shown in Saved reports.</p>
+            <div class="field">
+              <label for="reporter">Report author</label>
+              <select id="reporter" name="reporter" class="field-select" required aria-required="true">
+                <option value="" disabled selected>Select who prepared this report…</option>
+              </select>
             </div>
           </div>
 
@@ -125,12 +114,12 @@
 
       <section id="panel-saved" class="panel">
         <h2 class="panel-title">Saved reports</h2>
-        <p class="panel-hint">Search by KKS or description. Data persists when the service uses a database (see project README).</p>
+        <p class="panel-hint">Search by KKS, description, or author. Data persists when the service uses a database (see project README).</p>
         <div class="saved-toolbar">
           <button type="button" id="back-to-form" class="btn btn-secondary">New report</button>
           <label class="saved-search-wrap">
             <span class="visually-hidden">Search reports (KKS or description)</span>
-            <input type="search" id="saved-search" class="saved-search" placeholder="Search by KKS or description…" autocomplete="off" />
+            <input type="search" id="saved-search" class="saved-search" placeholder="Search by KKS, description, or author…" autocomplete="off" />
           </label>
         </div>
         <ul id="saved-list" class="saved-list"></ul>
@@ -148,6 +137,12 @@
         <div class="detail-complement">
           <h3>Amend report</h3>
           <div class="field">
+            <label for="detail-reporter">Prepared by</label>
+            <select id="detail-reporter" class="field-select" aria-label="Report author">
+              <option value="">Loading…</option>
+            </select>
+          </div>
+          <div class="field">
             <label for="detail-desc">Description</label>
             <div class="field-row">
               <textarea id="detail-desc" rows="3" placeholder="Add or update description..."></textarea>
@@ -162,6 +157,21 @@
             <input type="file" id="detail-attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
           </div>
           <button type="button" id="save-detail" class="btn btn-primary">Save changes</button>
+
+          <div id="email-send-section" class="email-send-section" hidden>
+            <h3 class="email-send-title">Send by email</h3>
+            <p id="email-send-intro" class="section-hint"></p>
+            <div id="email-send-form" class="email-send-form" hidden>
+              <p class="email-send-lead">Recipients receive the report text and the same files as in Attachments above.</p>
+              <div id="email-recipient-list" class="email-recipient-list" aria-label="Team recipients"></div>
+              <div class="field">
+                <label for="email-extra">Additional addresses <span class="hint-muted">(optional, comma or space separated)</span></label>
+                <input type="text" id="email-extra" placeholder="name@company.com, other@company.com" autocomplete="off" />
+              </div>
+              <button type="button" id="btn-send-email" class="btn btn-secondary">Send email with attachments</button>
+              <span id="email-send-feedback" class="copy-feedback email-send-feedback" aria-live="polite"></span>
+            </div>
+          </div>
         </div>
       </section>
     </main>

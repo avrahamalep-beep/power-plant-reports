@@ -7,6 +7,7 @@ const os = require('os');
 const { exec } = require('child_process');
 const multer = require('multer');
 const reportStore = require('./lib/reportStore');
+const mail = require('./lib/mail');
 
 function getLocalIPs() {
   const ifaces = os.networkInterfaces();
@@ -119,6 +120,79 @@ app.get('/api/recipients', (req, res) => {
   res.json(RECIPIENTS);
 });
 
+app.get('/api/reporters', (req, res) => {
+  res.json(RECIPIENTS.map(r => ({ id: r.id, name: r.name })));
+});
+
+app.get('/api/mail/status', (req, res) => {
+  res.json({ configured: mail.smtpConfigured() });
+});
+
+function isValidEmail(s) {
+  const t = String(s || '').trim();
+  if (t.length > 254 || t.length < 3) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t);
+}
+
+app.post('/api/reports/:id/email', async (req, res) => {
+  if (!mail.smtpConfigured()) {
+    return res.status(503).json({ error: 'SMTP not configured on server (set SMTP_HOST, SMTP_USER, SMTP_PASS).' });
+  }
+  const rawTo = req.body && req.body.to;
+  const list = Array.isArray(rawTo) ? rawTo : typeof rawTo === 'string' ? [rawTo] : [];
+  const to = [...new Set(list.map(e => String(e).trim().toLowerCase()).filter(Boolean))];
+  if (!to.length) {
+    return res.status(400).json({ error: 'Provide at least one recipient address in "to".' });
+  }
+  if (to.length > 25) {
+    return res.status(400).json({ error: 'Too many recipients (max 25).' });
+  }
+  for (const addr of to) {
+    if (!isValidEmail(addr)) {
+      return res.status(400).json({ error: 'Invalid email: ' + addr });
+    }
+  }
+  try {
+    const report = await reportStore.getReport(req.params.id);
+    if (!report) return res.status(404).json({ error: 'Report not found' });
+
+    let parts;
+    try {
+      parts = await reportStore.getAttachmentBuffersForReport(req.params.id);
+    } catch (readErr) {
+      console.error(readErr);
+      return res.status(500).json({ error: 'Could not read attachments from storage.' });
+    }
+
+    const maxBytes = Number(process.env.MAIL_MAX_ATTACHMENT_BYTES || 24 * 1024 * 1024);
+    const total = parts.reduce((sum, p) => sum + (p.buffer ? p.buffer.length : 0), 0);
+    if (total > maxBytes) {
+      return res.status(400).json({
+        error: `Attachments are about ${Math.ceil(total / 1024 / 1024)} MB; limit is ${Math.ceil(maxBytes / 1024 / 1024)} MB (MAIL_MAX_ATTACHMENT_BYTES).`
+      });
+    }
+
+    const kksPart = mail.safeSubjectPart(report.kks) || 'report';
+    const subject = `[Field report] ${kksPart}`;
+    const text = mail.buildReportEmailBody(report);
+
+    await mail.sendReportWithAttachments({
+      to,
+      subject,
+      text,
+      attachments: parts
+    });
+
+    res.json({ ok: true, recipients: to.length, attachmentCount: parts.length });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({
+      error: 'Email send failed. Check SMTP settings and logs.',
+      detail: process.env.NODE_ENV === 'development' ? String(e.message) : undefined
+    });
+  }
+});
+
 app.get('/api/reports', async (req, res) => {
   try {
     const reports = await reportStore.listReports();
@@ -224,6 +298,11 @@ function startServer(port) {
     const localUrl = `http://127.0.0.1:${port}`;
     console.log('');
     console.log('  Server ready.');
+    if (mail.smtpConfigured()) {
+      console.log('  Outbound email: SMTP enabled (report detail → Send by email).');
+    } else {
+      console.log('  Outbound email: off (set SMTP_HOST, SMTP_USER, SMTP_PASS to enable).');
+    }
     if (process.env.RENDER) {
       console.log('  (Render: use your service URL from the dashboard, not 127.0.0.1.)');
     } else {
