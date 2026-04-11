@@ -33,7 +33,10 @@ if errorlevel 1 (
   color 0C
   echo.
   echo  *** ERROR en push ***
-  echo  - Comprueba internet / VPN / firewall
+  echo  - Si dice "Could not resolve host: github.com" = DNS o red bloquea GitHub
+  echo    (muy comun en oficina). Prueba hotspot movil u otra red.
+  echo  - Lee: SI-GITHUB-NO-RESUELVE.md en esta carpeta
+  echo  - Otros fallos: internet / VPN / firewall
   echo  - Si pide login: GitHub - Personal Access Token
   echo.
   pause

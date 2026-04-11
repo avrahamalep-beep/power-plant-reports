@@ -61,12 +61,26 @@
             </div>
           </div>
 
+          <div class="field">
+            <label>Attachments (photo, video, document)</label>
+            <div class="attach-actions">
+              <button type="button" id="btn-camera-photo" class="btn btn-camera">📷 Take photo</button>
+              <button type="button" id="btn-camera-video" class="btn btn-camera">🎥 Record video</button>
+              <input type="file" id="camera-photo" accept="image/*" capture="environment" class="hidden-input" />
+              <input type="file" id="camera-video" accept="video/*" capture="environment" class="hidden-input" />
+            </div>
+            <input type="file" id="attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+            <div id="file-list" class="file-list"></div>
+          </div>
+
           <div class="copy-block">
             <button type="button" id="copy-all" class="btn btn-copy" title="Copy all fields to clipboard">
               <span class="copy-icon">📋</span> Copy all
             </button>
             <span id="copy-feedback" class="copy-feedback"></span>
           </div>
+
+          <hr class="divider" />
 
           <div class="recipients-panel">
             <div class="recipients-panel-head">
@@ -88,20 +102,6 @@
               <label for="custom-recipient">Additional email <span class="label-optional">(optional)</span></label>
               <input type="email" id="custom-recipient" name="custom-recipient" placeholder="name@company.com" autocomplete="email" />
             </div>
-          </div>
-
-          <hr class="divider" />
-
-          <div class="field">
-            <label>Attachments (photo, video, document)</label>
-            <div class="attach-actions">
-              <button type="button" id="btn-camera-photo" class="btn btn-camera">📷 Take photo</button>
-              <button type="button" id="btn-camera-video" class="btn btn-camera">🎥 Record video</button>
-              <input type="file" id="camera-photo" accept="image/*" capture="environment" class="hidden-input" />
-              <input type="file" id="camera-video" accept="video/*" capture="environment" class="hidden-input" />
-            </div>
-            <input type="file" id="attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
-            <div id="file-list" class="file-list"></div>
           </div>
 
           <div class="actions">
