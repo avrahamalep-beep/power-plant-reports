@@ -15,7 +15,7 @@
       <p class="subtitle">Power Plant · GE Vernova</p>
       <nav class="tabs">
         <button type="button" class="tab active" data-tab="form">New report</button>
-        <button type="button" class="tab" data-tab="sent">Sent</button>
+        <button type="button" class="tab" data-tab="sent">Saved reports</button>
       </nav>
     </header>
 
@@ -92,6 +92,10 @@
       <section id="panel-sent" class="panel">
         <div class="sent-toolbar">
           <button type="button" id="back-to-form" class="btn btn-secondary">← New report</button>
+          <label class="sent-search-wrap">
+            <span class="visually-hidden">Search saved reports</span>
+            <input type="search" id="sent-search" class="sent-search" placeholder="Search KKS, location, description…" autocomplete="off" />
+          </label>
         </div>
         <ul id="sent-list" class="sent-list"></ul>
         <p id="sent-empty" class="empty-msg">No reports saved.</p>

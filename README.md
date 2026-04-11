@@ -44,6 +44,6 @@ With **start.bat** running, use the `http://192.168.x.x:3000` link printed in th
 - **New report**: KKS, Location, Description, attachments. **Take photo** and **Record video** use the device camera on mobile.
 - **Copy all** / copy-paste per field for the ticket app.
 - **Recipients**: GE Vernova list or custom email.
-- **Sent**: saved reports with downloads.
+- **Saved reports**: list and search saved reports, open detail, download attachments.
 
 Data is stored in `data/reports.json` and `uploads/` (local). On Render free tier, data may reset when the service restarts.

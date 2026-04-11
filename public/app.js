@@ -12,6 +12,42 @@ const panelSent = $('#panel-sent');
 const panelDetail = $('#panel-detail');
 const sentList = $('#sent-list');
 const sentEmpty = $('#sent-empty');
+const sentSearch = $('#sent-search');
+
+let cachedSentReports = [];
+
+function filterReportsByQuery(reports, q) {
+  if (!q) return reports;
+  return reports.filter(r => {
+    const attNames = (r.attachments || []).map(a => a.name).join(' ');
+    const blob = [r.kks, r.location, r.description, attNames].join(' ').toLowerCase();
+    return blob.includes(q);
+  });
+}
+
+function renderSentList(reports, options = {}) {
+  const emptyFromFilter = options.emptyFromFilter;
+  if (!reports.length) {
+    sentEmpty.style.display = 'block';
+    sentEmpty.textContent = emptyFromFilter ? 'No reports match your search.' : 'No reports saved.';
+    sentList.innerHTML = '';
+    return;
+  }
+  sentEmpty.style.display = 'none';
+  sentList.innerHTML = reports.map(r => {
+    const date = new Date(r.createdAt).toLocaleString();
+    const attCount = (r.attachments && r.attachments.length) || 0;
+    return `
+          <li data-id="${r.id}">
+            <div class="sent-item-main" role="button" tabindex="0">
+              <div class="report-kks">${r.kks || '(no KKS)'}</div>
+              <div class="report-meta">${r.location || '-'} · ${date}${attCount ? ' · ' + attCount + ' attachment(s)' : ''}</div>
+            </div>
+            <button type="button" class="btn-sent-delete" data-id="${r.id}" aria-label="Delete report">Delete</button>
+          </li>
+        `;
+  }).join('');
+}
 const detailContent = $('#detail-content');
 const attachmentsInput = $('#attachments');
 const fileList = $('#file-list');
@@ -313,26 +349,25 @@ function loadSentReports() {
   fetch(API + '/api/reports')
     .then(r => r.json())
     .then(reports => {
-      sentEmpty.style.display = reports.length ? 'none' : 'block';
-      sentEmpty.textContent = 'No reports saved.';
-      sentList.innerHTML = reports.map(r => {
-        const date = new Date(r.createdAt).toLocaleString();
-        const attCount = (r.attachments && r.attachments.length) || 0;
-        return `
-          <li data-id="${r.id}">
-            <div class="sent-item-main" role="button" tabindex="0">
-              <div class="report-kks">${r.kks || '(no KKS)'}</div>
-              <div class="report-meta">${r.location || '-'} · ${date}${attCount ? ' · ' + attCount + ' attachment(s)' : ''}</div>
-            </div>
-            <button type="button" class="btn-sent-delete" data-id="${r.id}" aria-label="Delete report">Delete</button>
-          </li>
-        `;
-      }).join('');
+      cachedSentReports = reports;
+      const q = (sentSearch && sentSearch.value) ? sentSearch.value.trim().toLowerCase() : '';
+      const filtered = filterReportsByQuery(reports, q);
+      renderSentList(filtered, { emptyFromFilter: !!(q && !filtered.length) });
     })
     .catch(() => {
+      cachedSentReports = [];
       sentEmpty.style.display = 'block';
       sentEmpty.textContent = 'Error loading reports.';
+      sentList.innerHTML = '';
     });
+}
+
+if (sentSearch) {
+  sentSearch.addEventListener('input', () => {
+    const q = sentSearch.value.trim().toLowerCase();
+    const filtered = filterReportsByQuery(cachedSentReports, q);
+    renderSentList(filtered, { emptyFromFilter: !!(q && !filtered.length) });
+  });
 }
 
 function openReportDetail(id) {
