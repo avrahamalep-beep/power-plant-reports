@@ -299,18 +299,6 @@ function getSelectedEmails() {
   return emails;
 }
 
-function openMailto(reportData) {
-  const emails = reportData.sentTo && reportData.sentTo.length
-    ? reportData.sentTo
-    : (reportData.customRecipient ? [reportData.customRecipient] : getSelectedEmails());
-  const body = buildReportText(reportData);
-  const subject = `Malfunction Report - KKS: ${reportData.kks || 'N/A'} - ${reportData.location || 'Plant'}`;
-  const mailto = 'mailto:' + (emails.length ? emails.join(',') : '') +
-    '?subject=' + encodeURIComponent(subject) +
-    '&body=' + encodeURIComponent(body);
-  window.location.href = mailto;
-}
-
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
@@ -388,16 +376,6 @@ savedList.addEventListener('keydown', (e) => {
     const li = main.closest('li[data-id]');
     if (li) openReportDetail(li.dataset.id);
   }
-});
-
-$('#open-email').addEventListener('click', () => {
-  openMailto({
-    kks: $('#kks').value.trim(),
-    location: $('#location').value.trim(),
-    description: $('#description').value.trim(),
-    sentTo: getSelectedEmails(),
-    customRecipient: $('#custom-recipient').value.trim()
-  });
 });
 
 function loadSavedReports() {
@@ -509,12 +487,6 @@ $('#copy-detail').addEventListener('click', () => {
   }).catch(() => {
     showCopyFeedback($('#copy-detail-feedback'), 'Could not copy');
   });
-});
-
-$('#open-email-detail').addEventListener('click', () => {
-  const r = window._detailReport;
-  if (!r) return;
-  openMailto(r);
 });
 
 $('#delete-detail').addEventListener('click', () => {

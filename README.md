@@ -1,6 +1,6 @@
 # Power Plant Malfunction Reports
 
-Web app for field malfunction reports. Use from PC or mobile: take photos/videos with the camera or upload files, save reports, copy fields to the ticket app, and open email with the report for GE Vernova contacts.
+Web app for field malfunction reports. Use from PC or mobile: take photos/videos with the camera or upload files, save reports, and copy fields to the ticket app. Recipients are stored with each report; share text and files via your own email or Teams (attachments from the saved report detail).
 
 ## Live app (online)
 
@@ -31,10 +31,13 @@ Behavior:
 
 Turning on `DATABASE_URL` does **not** import old JSON reports automatically; only **new** saves go to Postgres until you add a migration script.
 
-## Automatic update (you run one file)
+## Automatic update (push to GitHub / Render)
 
-1. Double-click **`ABRIR-APP-ONLINE.bat`** — it pushes code to GitHub and opens Render + short instructions.
-2. If Render is already connected to this repo, each **push** triggers a **new deploy** automatically.
+1. Double-click **`HAZLO-AUTOMATICO.bat`** or **`ACTUALIZAR-WEB.bat`** — commits (if needed), pushes to GitHub, opens Render and the live app. Use from a network that can reach **github.com** (see `SI-GITHUB-NO-RESUELVE.md` if push fails on corporate Wi‑Fi).
+
+2. Double-click **`ABRIR-APP-ONLINE.bat`** — first-time push + opens Render + short instructions.
+
+3. If Render is already connected to this repo, each **push** triggers a **new deploy** automatically.
 
 Optional: in Render → your service → **Settings** → **Deploy Hook** → copy URL. In GitHub → repo **Settings** → **Secrets** → add **`RENDER_DEPLOY_HOOK_URL`** with that URL. Then every push to `main` also triggers deploy via GitHub Actions (see `.github/workflows/render-deploy.yml`).
 
@@ -66,5 +69,5 @@ With **start.bat** running, use the `http://192.168.x.x:3000` link printed in th
 
 - **New report**: KKS, Location, Description, attachments. **Take photo** and **Record video** use the device camera on mobile.
 - **Copy all** / copy-paste per field for the ticket app.
-- **Recipients**: GE Vernova list or custom email.
+- **Recipients**: GE Vernova list or custom email — saved on the report (not used to open a draft email).
 - **Reports saved**: **Report history** with search by KKS, description, location, and attachment names; open detail and download attachments.

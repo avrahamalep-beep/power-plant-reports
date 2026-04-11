@@ -58,7 +58,10 @@ echo  ========================================
 echo    LISTO
 echo  ========================================
 echo    GitHub actualizado. Render redeploya solo.
-echo    Si Render no puede clonar: lee SI-RENDER-NO-CLONA-GITHUB.md
+echo.
+echo    Para actualizar la web otra vez: este archivo o ACTUALIZAR-WEB.bat
+echo    Si Render no clona: SI-RENDER-NO-CLONA-GITHUB.md
+echo    Si GitHub no resuelve: SI-GITHUB-NO-RESUELVE.md
 echo  ========================================
 echo.
 pause

@@ -4,78 +4,91 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a1628" />
-  <meta name="description" content="Power plant field malfunction reports — GE Vernova. Save history, attachments, and open email." />
+  <meta name="description" content="Power plant field malfunction reports — GE Vernova. Save history, attachments, and copy fields for ticketing." />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Field Reports" />
-  <title>Malfunction Reports - Power Plant</title>
+  <title>Field malfunction reports · Power plant</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/icon.svg" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" class="svg-sprite">
+    <defs>
+      <symbol id="icon-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" d="M8 8v10a2 2 0 002 2h8a2 2 0 002-2V8H8z"/><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/></symbol>
+      <symbol id="icon-paste" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3h-4.18C14.4 1.84 13.3 1 12 1S9.6 1.84 9.18 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 16H5V5h2v2h10V5h2v14z"/></symbol>
+    </defs>
+  </svg>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <div class="app">
     <header class="header">
-      <h1>Field Reports</h1>
-      <p class="subtitle">Power Plant · GE Vernova</p>
-      <nav class="tabs">
+      <div class="header-inner">
+        <p class="product-line"><span class="product-badge">GE Vernova</span> · Power plant operations</p>
+        <h1>Field malfunction reports</h1>
+        <p class="subtitle">Capture incidents, attachments, and distribution list in one workflow.</p>
+      </div>
+      <nav class="tabs" aria-label="Main sections">
         <button type="button" class="tab active" data-tab="form">New report</button>
-        <button type="button" class="tab" data-tab="saved">Reports saved</button>
+        <button type="button" class="tab" data-tab="saved">Saved reports</button>
       </nav>
     </header>
 
     <main class="main">
       <section id="panel-form" class="panel active">
         <form id="report-form" class="form">
-          <div class="field">
-            <label for="kks">KKS</label>
-            <div class="field-row">
-              <input type="text" id="kks" name="kks" placeholder="e.g. 10ABC001" />
-              <div class="field-actions">
-                <button type="button" class="btn-icon" data-copy="kks" title="Copy">📋</button>
-                <button type="button" class="btn-icon" data-paste="kks" title="Paste">📥</button>
+          <div class="form-section">
+            <h2 class="section-heading">Incident details</h2>
+            <div class="field">
+              <label for="kks">KKS</label>
+              <div class="field-row">
+                <input type="text" id="kks" name="kks" placeholder="e.g. 10ABC001" autocomplete="off" />
+                <div class="field-actions">
+                  <button type="button" class="btn-icon" data-copy="kks" title="Copy to clipboard" aria-label="Copy KKS"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-copy" xlink:href="#icon-copy" /></svg></button>
+                  <button type="button" class="btn-icon" data-paste="kks" title="Paste from clipboard" aria-label="Paste KKS"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-paste" xlink:href="#icon-paste" /></svg></button>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="field">
-            <label for="location">Location</label>
-            <div class="field-row">
-              <input type="text" id="location" name="location" placeholder="Location in plant" />
-              <div class="field-actions">
-                <button type="button" class="btn-icon" data-copy="location" title="Copy">📋</button>
-                <button type="button" class="btn-icon" data-paste="location" title="Paste">📥</button>
+            <div class="field">
+              <label for="location">Location</label>
+              <div class="field-row">
+                <input type="text" id="location" name="location" placeholder="Location in plant" autocomplete="off" />
+                <div class="field-actions">
+                  <button type="button" class="btn-icon" data-copy="location" title="Copy to clipboard" aria-label="Copy location"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-copy" xlink:href="#icon-copy" /></svg></button>
+                  <button type="button" class="btn-icon" data-paste="location" title="Paste from clipboard" aria-label="Paste location"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-paste" xlink:href="#icon-paste" /></svg></button>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="field">
-            <label for="description">Description</label>
-            <div class="field-row">
-              <textarea id="description" name="description" rows="4" placeholder="Describe the malfunction..."></textarea>
-              <div class="field-actions">
-                <button type="button" class="btn-icon" data-copy="description" title="Copy">📋</button>
-                <button type="button" class="btn-icon" data-paste="description" title="Paste">📥</button>
+            <div class="field">
+              <label for="description">Description</label>
+              <div class="field-row">
+                <textarea id="description" name="description" rows="4" placeholder="Describe the malfunction…"></textarea>
+                <div class="field-actions">
+                  <button type="button" class="btn-icon" data-copy="description" title="Copy to clipboard" aria-label="Copy description"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-copy" xlink:href="#icon-copy" /></svg></button>
+                  <button type="button" class="btn-icon" data-paste="description" title="Paste from clipboard" aria-label="Paste description"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-paste" xlink:href="#icon-paste" /></svg></button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="field">
-            <label>Attachments (photo, video, document)</label>
+          <div class="form-section">
+            <h2 class="section-heading">Attachments</h2>
+            <p class="section-hint">Photos, videos, or documents (camera works best on mobile).</p>
             <div class="attach-actions">
-              <button type="button" id="btn-camera-photo" class="btn btn-camera">📷 Take photo</button>
-              <button type="button" id="btn-camera-video" class="btn btn-camera">🎥 Record video</button>
+              <button type="button" id="btn-camera-photo" class="btn btn-camera">Take photo</button>
+              <button type="button" id="btn-camera-video" class="btn btn-camera">Record video</button>
               <input type="file" id="camera-photo" accept="image/*" capture="environment" class="hidden-input" />
               <input type="file" id="camera-video" accept="video/*" capture="environment" class="hidden-input" />
             </div>
-            <input type="file" id="attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
+            <input type="file" id="attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" aria-label="Choose files to attach" />
             <div id="file-list" class="file-list"></div>
           </div>
 
           <div class="copy-block">
             <button type="button" id="copy-all" class="btn btn-copy" title="Copy all fields to clipboard">
-              <span class="copy-icon">📋</span> Copy all
+              <svg class="btn-inline-svg" aria-hidden="true"><use href="#icon-copy" xlink:href="#icon-copy" /></svg> Copy all fields
             </button>
             <span id="copy-feedback" class="copy-feedback"></span>
           </div>
@@ -84,8 +97,8 @@
 
           <div class="recipients-panel">
             <div class="recipients-panel-head">
-              <h3 class="recipients-title">Email recipients</h3>
-              <p class="recipients-lead">Choose GE Vernova contacts for this report. Use <strong>Select all</strong> or pick individually.</p>
+              <h3 class="recipients-title">Distribution list</h3>
+              <p class="recipients-lead">These contacts are <strong>saved with the report</strong> (for the record). Use <strong>Copy all</strong> or download attachments from the saved report to share by email or Teams.</p>
             </div>
             <div class="recipients-toolbar">
               <input type="search" id="recipient-filter" class="recipient-filter" placeholder="Search by name or email…" autocomplete="off" enterkeyhint="search" aria-label="Filter recipients" />
@@ -106,16 +119,15 @@
 
           <div class="actions">
             <button type="submit" class="btn btn-primary">Save report</button>
-            <button type="button" id="open-email" class="btn btn-email">Open email with report</button>
           </div>
         </form>
       </section>
 
       <section id="panel-saved" class="panel">
-        <h2 class="panel-title">Report history</h2>
-        <p class="panel-hint">Search by KKS or description text. Reports are stored on the server and do not disappear when you configure a database (see README).</p>
+        <h2 class="panel-title">Saved reports</h2>
+        <p class="panel-hint">Search by KKS or description. Data persists when the service uses a database (see project README).</p>
         <div class="saved-toolbar">
-          <button type="button" id="back-to-form" class="btn btn-secondary">← New report</button>
+          <button type="button" id="back-to-form" class="btn btn-secondary">New report</button>
           <label class="saved-search-wrap">
             <span class="visually-hidden">Search reports (KKS or description)</span>
             <input type="search" id="saved-search" class="saved-search" placeholder="Search by KKS or description…" autocomplete="off" />
@@ -127,21 +139,21 @@
 
       <section id="panel-detail" class="panel">
         <div class="detail-toolbar">
-          <button type="button" id="back-to-saved" class="btn btn-secondary">← Reports saved</button>
-          <button type="button" id="copy-detail" class="btn btn-copy">📋 Copy all</button>
+          <button type="button" id="back-to-saved" class="btn btn-secondary">Back to list</button>
+          <button type="button" id="copy-detail" class="btn btn-copy"><svg class="btn-inline-svg" aria-hidden="true"><use href="#icon-copy" xlink:href="#icon-copy" /></svg> Copy all fields</button>
           <button type="button" id="delete-detail" class="btn btn-delete">Delete report</button>
           <span id="copy-detail-feedback" class="copy-feedback"></span>
         </div>
         <div id="detail-content" class="detail-content"></div>
         <div class="detail-complement">
-          <h3>Add or edit information (PC)</h3>
+          <h3>Amend report</h3>
           <div class="field">
             <label for="detail-desc">Description</label>
             <div class="field-row">
               <textarea id="detail-desc" rows="3" placeholder="Add or update description..."></textarea>
               <div class="field-actions">
-                <button type="button" class="btn-icon" data-copy="detail-desc" title="Copy">📋</button>
-                <button type="button" class="btn-icon" data-paste="detail-desc" title="Paste">📥</button>
+                <button type="button" class="btn-icon" data-copy="detail-desc" title="Copy to clipboard" aria-label="Copy description"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-copy" xlink:href="#icon-copy" /></svg></button>
+                <button type="button" class="btn-icon" data-paste="detail-desc" title="Paste from clipboard" aria-label="Paste description"><svg class="btn-icon-svg" aria-hidden="true"><use href="#icon-paste" xlink:href="#icon-paste" /></svg></button>
               </div>
             </div>
           </div>
@@ -150,9 +162,6 @@
             <input type="file" id="detail-attachments" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" />
           </div>
           <button type="button" id="save-detail" class="btn btn-primary">Save changes</button>
-        </div>
-        <div class="detail-actions">
-          <button type="button" id="open-email-detail" class="btn btn-email">Open email with report</button>
         </div>
       </section>
     </main>
