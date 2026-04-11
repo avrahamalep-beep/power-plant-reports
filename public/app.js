@@ -439,6 +439,25 @@ function openReportDetail(id) {
     .catch(() => alert('Could not load report.'));
 }
 
+function attachmentRowHtml(a, baseUrl) {
+  const path = a.path || '';
+  const href = baseUrl + path;
+  const isPgApi = path.indexOf('/api/attachments/') === 0;
+  const joinQ = (u, q) => u + (u.indexOf('?') >= 0 ? '&' : '?') + q;
+  const openHref = isPgApi ? joinQ(href, 'view=1') : href;
+  const downloadHref = isPgApi ? joinQ(href, 'download=1') : href;
+  const nameEsc = escapeHtml(a.name || 'file');
+  const dlAttr = String(a.name || 'file').replace(/["\r\n<>&]/g, '_');
+  return `
+    <div class="attachment-row">
+      <span class="attachment-name">${nameEsc}</span>
+      <span class="attachment-actions">
+        <a href="${openHref}" target="_blank" rel="noopener noreferrer" class="btn-attachment">Open</a>
+        <a href="${downloadHref}" download="${dlAttr}" class="btn-attachment btn-attachment-secondary">Download</a>
+      </span>
+    </div>`;
+}
+
 function renderDetailReport(report) {
   const baseUrl = window.location.origin;
   detailContent.innerHTML = `
@@ -456,9 +475,10 @@ function renderDetailReport(report) {
     </div>
     <div class="detail-field">
       <label>Attachments</label>
+      <p class="attachment-hint">Open in the browser when supported; Download keeps a copy.</p>
       <div class="attachments-list">
         ${(report.attachments && report.attachments.length)
-          ? report.attachments.map(a => `<a href="${baseUrl}${a.path}" download="${escapeHtml(a.name)}">${escapeHtml(a.name)}</a>`).join('')
+          ? report.attachments.map(a => attachmentRowHtml(a, baseUrl)).join('')
           : '<span class="value">None</span>'}
       </div>
     </div>

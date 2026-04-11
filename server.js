@@ -69,7 +69,13 @@ app.get('/api/attachments/:fileId', async (req, res) => {
     if (!blob) return res.status(404).send('Not found');
     res.setHeader('Content-Type', blob.mimetype || 'application/octet-stream');
     const safeName = String(blob.name || 'file').replace(/[\r\n"]/g, '_');
-    res.setHeader('Content-Disposition', `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(blob.name || 'file')}`);
+    const enc = encodeURIComponent(blob.name || 'file');
+    const asInline = req.query.view === '1' || req.query.inline === '1';
+    const disp = asInline ? 'inline' : 'attachment';
+    res.setHeader(
+      'Content-Disposition',
+      `${disp}; filename="${safeName}"; filename*=UTF-8''${enc}`
+    );
     res.send(blob.data);
   } catch (e) {
     console.error(e);
