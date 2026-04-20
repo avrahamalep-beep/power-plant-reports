@@ -21,6 +21,30 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
+function isImageAttachment(a) {
+  if (!a) return false;
+  const mime = String(a.mimetype || '').toLowerCase();
+  if (mime.startsWith('image/')) return true;
+  const name = String(a.name || a.path || '').toLowerCase();
+  return /\.(png|jpe?g|gif|webp|bmp|svg)$/.test(name);
+}
+
+function attachmentPreviewHref(a, baseUrl, inline = false) {
+  const p = a && a.path ? a.path : '';
+  const href = baseUrl + p;
+  if (p.indexOf('/api/attachments/') !== 0) return href;
+  const hasQ = href.indexOf('?') >= 0;
+  if (!inline) return href;
+  return href + (hasQ ? '&' : '?') + 'view=1';
+}
+
+function truncateText(text, max = 120) {
+  const s = String(text || '').trim().replace(/\s+/g, ' ');
+  if (!s) return '';
+  if (s.length <= max) return s;
+  return s.slice(0, max - 1) + '…';
+}
+
 function filterReportsByQuery(reports, q) {
   if (!q) return reports;
   return reports.filter(r => {
@@ -47,11 +71,19 @@ function renderSavedList(reports, options = {}) {
     const attCount = (r.attachments && r.attachments.length) || 0;
     const by = (r.reporterName || '').trim();
     const byPart = by ? ` · ${escapeHtml(by)}` : '';
+    const desc = truncateText(r.description || '', 140);
+    const images = (r.attachments || []).filter(isImageAttachment).slice(0, 2);
+    const imageHtml = images.map(a => {
+      const src = attachmentPreviewHref(a, window.location.origin, true);
+      return `<img src="${src}" alt="${escapeHtml(a.name || 'Attachment preview')}" class="saved-thumb" loading="lazy" />`;
+    }).join('');
     return `
           <li data-id="${r.id}">
             <div class="saved-item-main" role="button" tabindex="0">
               <div class="report-kks">${r.kks || '(no KKS)'}</div>
               <div class="report-meta">${escapeHtml(r.location || '-')}${byPart} · ${date}${attCount ? ' · ' + attCount + ' attachment(s)' : ''}</div>
+              ${desc ? `<div class="report-desc-preview">${escapeHtml(desc)}</div>` : ''}
+              ${imageHtml ? `<div class="saved-thumbs">${imageHtml}</div>` : ''}
             </div>
             <button type="button" class="btn-saved-delete" data-id="${r.id}" aria-label="Delete report">Delete</button>
           </li>
@@ -81,6 +113,19 @@ function buildReportText(data) {
     '---'
   ];
   return lines.join('\n');
+}
+
+function buildWhatsAppText(data) {
+  const desc = truncateText(data.description || '-', 180);
+  const attachments = Array.isArray(data.attachments) ? data.attachments.length : 0;
+  return [
+    'Hello team, I added a new field report.',
+    'KKS: ' + (data.kks || '-'),
+    'Location: ' + (data.location || '-'),
+    'Prepared by: ' + ((data.reporterName || '').trim() || '-'),
+    'Summary: ' + desc,
+    'Attachments: ' + attachments
+  ].join('\n');
 }
 
 function reporterLabelFromFormSelect() {
@@ -488,14 +533,22 @@ function attachmentRowHtml(a, baseUrl) {
   const joinQ = (u, q) => u + (u.indexOf('?') >= 0 ? '&' : '?') + q;
   const openHref = isPgApi ? joinQ(href, 'view=1') : href;
   const downloadHref = isPgApi ? joinQ(href, 'download=1') : href;
+  const previewHref = attachmentPreviewHref(a, baseUrl, true);
   const nameEsc = escapeHtml(a.name || 'file');
   const dlAttr = String(a.name || 'file').replace(/["\r\n<>&]/g, '_');
+  const hasPreview = isImageAttachment(a);
+  const aid = escapeHtml(a.id || '');
+  const pathEsc = escapeHtml(path);
   return `
     <div class="attachment-row">
-      <span class="attachment-name">${nameEsc}</span>
+      <span class="attachment-main">
+        ${hasPreview ? `<img src="${previewHref}" alt="${nameEsc}" class="attachment-thumb" loading="lazy" />` : ''}
+        <span class="attachment-name">${nameEsc}</span>
+      </span>
       <span class="attachment-actions">
         <a href="${openHref}" target="_blank" rel="noopener noreferrer" class="btn-attachment">Open</a>
         <a href="${downloadHref}" download="${dlAttr}" class="btn-attachment btn-attachment-secondary">Download</a>
+        <button type="button" class="btn-attachment btn-attachment-danger btn-delete-attachment" data-attachment-id="${aid}" data-attachment-path="${pathEsc}">Delete</button>
       </span>
     </div>`;
 }
@@ -521,7 +574,7 @@ function renderDetailReport(report) {
     </div>
     <div class="detail-field">
       <label>Attachments</label>
-      <p class="attachment-hint">Open in the browser when supported; Download keeps a copy.</p>
+      <p class="attachment-hint">Preview thumbnails for images. Open in browser when supported; Download keeps a copy.</p>
       <div class="attachments-list">
         ${(report.attachments && report.attachments.length)
           ? report.attachments.map(a => attachmentRowHtml(a, baseUrl)).join('')
@@ -564,6 +617,49 @@ $('#delete-detail').addEventListener('click', () => {
   if (!id) return;
   if (!confirm('Delete this report permanently? Attachments will be removed too.')) return;
   deleteReport(id);
+});
+
+detailContent.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-delete-attachment');
+  if (!btn) return;
+  const id = currentReportId;
+  if (!id) return;
+  if (!confirm('Delete this attachment from the report?')) return;
+  const attachmentId = btn.getAttribute('data-attachment-id') || '';
+  const attachmentPath = btn.getAttribute('data-attachment-path') || '';
+  btn.disabled = true;
+  try {
+    const res = await fetch(API + '/api/reports/' + id + '/attachments', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        attachmentId,
+        path: attachmentPath
+      })
+    });
+    if (!res.ok) throw new Error();
+    const refresh = await fetch(API + '/api/reports/' + id);
+    const updated = await refresh.json();
+    window._detailReport = updated;
+    renderDetailReport(updated);
+    showToast('Attachment deleted.');
+    loadSavedReports();
+  } catch (err) {
+    alert('Could not delete attachment.');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$('#copy-whatsapp').addEventListener('click', () => {
+  const r = window._detailReport;
+  if (!r) return;
+  const text = buildWhatsAppText(r);
+  copyToClipboard(text).then(() => {
+    showCopyFeedback($('#copy-detail-feedback'), 'WhatsApp text copied');
+  }).catch(() => {
+    showCopyFeedback($('#copy-detail-feedback'), 'Could not copy');
+  });
 });
 
 const btnSendEmail = $('#btn-send-email');

@@ -246,6 +246,17 @@ app.delete('/api/reports/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/reports/:id/attachments', async (req, res) => {
+  try {
+    const updated = await reportStore.deleteAttachment(req.params.id, req.body || {});
+    if (!updated) return res.status(404).json({ error: 'Report not found' });
+    res.json({ attachments: updated.attachments || [] });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Could not delete attachment' });
+  }
+});
+
 app.post('/api/reports/:id/upload', uploadArray(), async (req, res) => {
   try {
     if (reportStore.usePg) {

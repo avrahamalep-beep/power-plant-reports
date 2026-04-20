@@ -598,6 +598,29 @@ select:focus-visible {
   color: var(--text-muted);
 }
 
+.saved-list .report-desc-preview {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+  opacity: 0.95;
+  line-height: 1.35;
+}
+
+.saved-list .saved-thumbs {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.saved-list .saved-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
 .empty-msg {
   text-align: center;
   color: var(--text-muted);
@@ -677,6 +700,24 @@ select:focus-visible {
   min-width: 0;
 }
 
+.detail-content .attachment-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.detail-content .attachment-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+
 .detail-content .attachment-actions {
   display: flex;
   flex-wrap: wrap;
@@ -711,6 +752,18 @@ select:focus-visible {
 .detail-content .btn-attachment-secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.detail-content .btn-attachment-danger {
+  border-color: #8b2942;
+  color: #e8a4b0;
+  background: transparent;
+}
+
+.detail-content .btn-attachment-danger:hover {
+  border-color: #c44d6a;
+  color: #fff;
+  background: rgba(139, 41, 66, 0.35);
 }
 
 .detail-complement {
