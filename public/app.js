@@ -7,6 +7,8 @@ let currentReportId = null;
 let audioMediaRecorder = null;
 let audioStream = null;
 let audioChunks = [];
+let audioTimerInterval = null;
+let audioStartMs = 0;
 
 const form = $('#report-form');
 const panelForm = $('#panel-form');
@@ -315,12 +317,35 @@ $('#camera-video').addEventListener('change', function() {
 });
 
 const btnAudioRecord = $('#btn-audio-record');
+const audioTimerEl = $('#audio-timer');
+
+function formatElapsed(ms) {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+  const ss = String(totalSec % 60).padStart(2, '0');
+  return `${mm}:${ss}`;
+}
+
+function setAudioTimerIdle() {
+  if (!audioTimerEl) return;
+  audioTimerEl.textContent = '00:00';
+  audioTimerEl.classList.remove('recording');
+}
+
+function stopAudioTimer() {
+  if (audioTimerInterval) {
+    clearInterval(audioTimerInterval);
+    audioTimerInterval = null;
+  }
+}
 
 function resetAudioButton() {
   if (!btnAudioRecord) return;
   btnAudioRecord.textContent = 'Record audio';
   btnAudioRecord.classList.remove('recording');
   btnAudioRecord.disabled = false;
+  stopAudioTimer();
+  setAudioTimerIdle();
 }
 
 function stopAudioStreamTracks() {
@@ -363,6 +388,13 @@ async function startAudioRecording() {
       alert('Could not record audio.');
     };
     audioMediaRecorder.start();
+    audioStartMs = Date.now();
+    setAudioTimerIdle();
+    if (audioTimerEl) audioTimerEl.classList.add('recording');
+    stopAudioTimer();
+    audioTimerInterval = setInterval(() => {
+      if (audioTimerEl) audioTimerEl.textContent = formatElapsed(Date.now() - audioStartMs);
+    }, 200);
     btnAudioRecord.textContent = 'Stop recording';
     btnAudioRecord.classList.add('recording');
     btnAudioRecord.disabled = false;
@@ -391,6 +423,7 @@ if (btnAudioRecord) {
     startAudioRecording();
   });
 }
+setAudioTimerIdle();
 
 window._mailConfigured = false;
 
