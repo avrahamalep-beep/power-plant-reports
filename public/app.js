@@ -4,6 +4,9 @@ const $$ = (s, el = document) => el.querySelectorAll(s);
 
 let pendingFiles = [];
 let currentReportId = null;
+let audioMediaRecorder = null;
+let audioStream = null;
+let audioChunks = [];
 
 const form = $('#report-form');
 const panelForm = $('#panel-form');
@@ -311,6 +314,84 @@ $('#camera-video').addEventListener('change', function() {
   this.value = '';
 });
 
+const btnAudioRecord = $('#btn-audio-record');
+
+function resetAudioButton() {
+  if (!btnAudioRecord) return;
+  btnAudioRecord.textContent = 'Record audio';
+  btnAudioRecord.classList.remove('recording');
+  btnAudioRecord.disabled = false;
+}
+
+function stopAudioStreamTracks() {
+  if (!audioStream) return;
+  audioStream.getTracks().forEach(t => t.stop());
+  audioStream = null;
+}
+
+async function startAudioRecording() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+    alert('Audio recording is not supported in this browser/device.');
+    return;
+  }
+  if (!btnAudioRecord) return;
+  btnAudioRecord.disabled = true;
+  try {
+    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    audioMediaRecorder = new MediaRecorder(audioStream);
+    audioMediaRecorder.ondataavailable = (ev) => {
+      if (ev.data && ev.data.size > 0) audioChunks.push(ev.data);
+    };
+    audioMediaRecorder.onstop = () => {
+      const mime = audioMediaRecorder && audioMediaRecorder.mimeType ? audioMediaRecorder.mimeType : 'audio/webm';
+      const ext = mime.includes('ogg') ? 'ogg' : (mime.includes('mp4') || mime.includes('mpeg')) ? 'm4a' : 'webm';
+      const blob = new Blob(audioChunks, { type: mime });
+      const file = new File([blob], `voice-note-${Date.now()}.${ext}`, { type: mime });
+      addToPendingFiles([file]);
+      audioMediaRecorder = null;
+      audioChunks = [];
+      stopAudioStreamTracks();
+      resetAudioButton();
+      showToast('Audio attached.');
+    };
+    audioMediaRecorder.onerror = () => {
+      audioMediaRecorder = null;
+      audioChunks = [];
+      stopAudioStreamTracks();
+      resetAudioButton();
+      alert('Could not record audio.');
+    };
+    audioMediaRecorder.start();
+    btnAudioRecord.textContent = 'Stop recording';
+    btnAudioRecord.classList.add('recording');
+    btnAudioRecord.disabled = false;
+    showToast('Recording audio...');
+  } catch (err) {
+    stopAudioStreamTracks();
+    resetAudioButton();
+    alert('Microphone permission denied or unavailable.');
+  }
+}
+
+function stopAudioRecording() {
+  if (audioMediaRecorder && audioMediaRecorder.state !== 'inactive') {
+    audioMediaRecorder.stop();
+  } else {
+    resetAudioButton();
+  }
+}
+
+if (btnAudioRecord) {
+  btnAudioRecord.addEventListener('click', () => {
+    if (audioMediaRecorder && audioMediaRecorder.state === 'recording') {
+      stopAudioRecording();
+      return;
+    }
+    startAudioRecording();
+  });
+}
+
 window._mailConfigured = false;
 
 Promise.all([
@@ -448,6 +529,11 @@ form.addEventListener('submit', async (e) => {
     fileList.innerHTML = '';
     $('#camera-photo').value = '';
     $('#camera-video').value = '';
+    if (audioMediaRecorder && audioMediaRecorder.state === 'recording') {
+      stopAudioRecording();
+    }
+    stopAudioStreamTracks();
+    resetAudioButton();
     form.reset();
     fillReporterFormOptions();
 

@@ -397,6 +397,12 @@ select:focus-visible {
   background: rgba(0,163,224,0.25);
 }
 
+.btn-camera.recording {
+  border-color: #c44d6a;
+  background: rgba(139, 41, 66, 0.35);
+  color: #fff;
+}
+
 .hidden-input {
   position: absolute;
   width: 0;
